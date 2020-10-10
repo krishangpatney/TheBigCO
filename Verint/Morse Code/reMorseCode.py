@@ -3,8 +3,19 @@ import matplotlib.pyplot as plt
 import wave
 import struct
 import math
-import sys
+
 class Morse:
+    """
+        Takes input and generates 
+            morse.txt file
+            morse.wav file
+
+            Turns encoded morse into text
+            Not implemented- audio to text
+
+
+    """
+
     freq = 480 #C4 middle C
     T = 1/freq
     sample = 44100
@@ -143,7 +154,7 @@ class Morse:
         #encode data into raw bytes
         BinStr = bytearray()
         for i in range(track.size):
-            BinStr.extend(struct.pack('h', int(round(track[i]*10000))))#.decode(sys.stdout.encoding)
+            BinStr.extend(struct.pack('h', int(round(track[i]*10000))))
         fout.writeframesraw(BinStr)
         fout.close()
         print("Saved: "+filename+".wav")

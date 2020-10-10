@@ -6,6 +6,7 @@ import math
 
 class Morse:
     """
+        Capital letters are converted to lowercase
         Takes input and generates 
             morse.txt file
             morse.wav file
@@ -71,10 +72,13 @@ class Morse:
         morseArr=  []
         
         for char in self.unencoded:
-            if char!=" ":
-                morseArr.append(Morse.encKey.get(char)+"   ")
-            else:
-                morseArr.append(Morse.encKey.get(char))
+            
+            #filter out non alpha chars
+            if(Morse.encKey.get(char.lower(),False)):
+                if char!=" ":
+                    morseArr.append(Morse.encKey.get(char.lower())+"   ")
+                else:
+                    morseArr.append(Morse.encKey.get(char))
         self.encoded = ''.join(morseArr)
         self.toFile(self.encoded)
         return ''.join(self.encoded)
@@ -160,7 +164,7 @@ class Morse:
         print("Saved: "+filename+".wav")
 
 # demo example
-txt = "hello"
+txt = str(input("Enter a message to be converted:(enter key to submit)\n"))
 runner = Morse(txt)
 
 # returns morse code
@@ -168,6 +172,9 @@ runner = Morse(txt)
 # been created
 morse_txt = runner.encode_text()
 
-# Output text is the same as the input text
-print(runner.decode_text(morse_txt) == txt) 
+#generate audio file
 runner.generate_audio()
+
+# Output text is the same as the input text
+print("Decoded Text:", end=" ")
+print(runner.decode_text(morse_txt))

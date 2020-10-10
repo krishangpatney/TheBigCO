@@ -1,0 +1,13 @@
+Country Name | Network Protocol
+---------------------------------------------
+Bulgaria | Hyper Text Transfer Protocol
+Brazil |Address Resolution Protocol
+Zambia | Address Resolution Protocol
+Wales | File Transfer Protocol User
+France | File Transfer Protocol Password
+Romania | Domain Name System
+India | File Transfer Protocol (Base64)
+USA | Hyper Text Transfer Protocol (in PNG)
+Italy | System Message Block Protocol 2 (in MP3)
+Liechtenstein | User Datagram Protocol
+Japan | Transfer Control Protocol

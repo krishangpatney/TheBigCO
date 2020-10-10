@@ -5,11 +5,13 @@ import struct
 import math
 import sys
 class Morse:
-    freq = 240 #C4 middle C
+    freq = 480 #C4 middle C
     T = 1/freq
     sample = 44100
     samples_in_T = int(sample*T)
 
+    # disgusting i know
+    # its just a char map of askii to morse
     encKey = {
         'a':'.-', 'b':'-...','c':'-.-.','d':'-..',
         'e':'.', 'f':'..-.' ,'g':'--.','h':'....',
@@ -42,9 +44,10 @@ class Morse:
         return
 
     # write morse code to file
-    def toFile(self,input,file="morse.txt"):
-        with open(file, 'w') as f:
+    def toFile(self,input,file="morse"):
+        with open(str(file)+".txt", 'w') as f:
             f.write(input)
+        print("Morse Saved to "+file)
         return
 
     # setter method to update morse
@@ -53,6 +56,7 @@ class Morse:
 
     # encode array into morse code as text
     def encode_text(self):
+        print("Generating Morse...")
         morseArr=  []
         
         for char in self.unencoded:
@@ -66,6 +70,7 @@ class Morse:
 
     # decode morse code text
     def decode_text(self, morse):
+        print("Decoding Morse")
         morse = morse.split(Morse.encKey[' '])
         for word in range(len(morse)):
             
@@ -80,15 +85,16 @@ class Morse:
         #remove trailing space
         return morse[:-1]
 
-    def generate_audio(self):
-
+    def generate_audio(self, filename="morse"):
+        print("Creating Audio File...")
+        
         # specify morse code time dutations        
         DOT = int((Morse.sample*0.5)/Morse.samples_in_T)
         DASH = int((Morse.sample*1)/Morse.samples_in_T)
 
         # 3 space characters in a row
-        SPACE = int((Morse.sample*0.75)/Morse.samples_in_T)
-
+        LETTER_SPACE = int(DOT * Morse.samples_in_T)
+        WORD_SPACE =  LETTER_SPACE*3
         # build a fourier series to sample wave
         x = np.arange(DOT*Morse.samples_in_T)
         y = np.empty(Morse.samples_in_T)
@@ -103,37 +109,44 @@ class Morse:
         # create arrays that represent each sound type
         dot    = np.tile(y,DOT)
         dash   = np.tile(y,DASH)
-        space  = np.zeros(SPACE) 
-        inter  = np.zeros(DOT) 
-       
-        # plt.plot(x,y)
-        # plt.show()
+        word_space  = np.zeros(WORD_SPACE) 
+        letter_space  = np.zeros(LETTER_SPACE) 
+        
+        #init sound array
         sound_arr = np.empty((1))
 
+        # map inputs to sounds
         for char in self.encoded:
-            print(char, end="")
             if(char == '.'):
                 sound_arr = np.hstack((sound_arr,dot))
-                sound_arr = np.hstack((sound_arr,inter))
+                sound_arr = np.hstack((sound_arr,letter_space))
             elif(char=='-'):
                 sound_arr = np.hstack((sound_arr,dash))
-                sound_arr = np.hstack((sound_arr,inter))
+                sound_arr = np.hstack((sound_arr,letter_space))
             elif(char == ' '):
-                sound_arr = np.hstack((sound_arr,space))
+                sound_arr = np.hstack((sound_arr,word_space))
 
-        self.save_audio(sound_arr)
+        self.save_audio(sound_arr, filename)
 
-    def save_audio(self,track):
-        fout = wave.open("morse.wav","w")
+    def save_audio(self,track, filename="morse"):
+        print("Saving Audio file")
+
+        #create eav file
+        fout = wave.open(str(filename)+".wav","w")
+
+        #setup params
         fout.setnchannels(1) # Mono
         fout.setsampwidth(2) # Sample is 2 Bytes
         fout.setframerate(Morse.sample)
         fout.setcomptype('NONE','Not Compressed')
+
+        #encode data into raw bytes
         BinStr = bytearray()
         for i in range(track.size):
             BinStr.extend(struct.pack('h', int(round(track[i]*10000))))#.decode(sys.stdout.encoding)
         fout.writeframesraw(BinStr)
         fout.close()
+        print("Saved: "+filename+".wav")
 
 # demo example
 txt = "hello"

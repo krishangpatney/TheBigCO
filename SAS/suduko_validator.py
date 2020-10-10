@@ -1,16 +1,15 @@
 import numpy as np
 
 # convert string to grid
-def create_grid(string):
+def validator(string):
+    if len(a) != (9*9) and all(i.isdigit() for i in a) != True:
+        return False
     grid = '\n'.join([string[i:i+9] for i in range(0, len(string), 9)])
     grid = np.array([[int(i) for i in line] for line in grid.split()])
-    return grid
-
-# Return True if it is valid else False
-def validator(grid):
+    
     for i in range(9):
         j, k = (i // 3) * 3, (i % 3) * 3
-        # checks each row and col, and 3x3 grids 
+
         if sorted(grid[i,:]) == list(range(1, 9)) or sorted(grid[:,i]) == list(range(1, 9)) or sorted(grid[j:j+3, k:k+3].ravel()) == list(range(1, 9)):
             return False
     return True

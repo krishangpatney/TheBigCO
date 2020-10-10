@@ -59,8 +59,14 @@ class Morse:
     def toFile(self,input,file="morse"):
         with open(str(file)+".txt", 'w') as f:
             f.write(input)
-        print("Morse Saved to "+file)
+        print("Morse Saved to "+file+".txt")
         return
+
+    def fromFile(self, filepath="morse.txt"):
+        with open(filepath) as file:
+            #stored as single line. retrieve single line
+            data =  file.readline()
+        return self.decode_text(data)
 
     # setter method to update morse
     def setText(self,text):
@@ -176,5 +182,6 @@ morse_txt = runner.encode_text()
 runner.generate_audio()
 
 # Output text is the same as the input text
-print("Decoded Text:", end=" ")
-print(runner.decode_text(morse_txt))
+# these methods could be adapted to read in
+# other morse code files
+print("Decoded Text:",runner.fromFile())

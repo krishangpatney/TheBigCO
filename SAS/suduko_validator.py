@@ -17,5 +17,8 @@ def validator(grid):
 
 if __name__ == "__main__":
     # get input 
+    # Test String
+    print("Test String : 859612437723854169164379528986147352375268914241593786432981675617425893598736241")
+    print(validator(create_grid('859612437723854169164379528986147352375268914241593786432981675617425893598736241')))
     string = input('enter string input : ')
     print(validator(create_grid(string)))

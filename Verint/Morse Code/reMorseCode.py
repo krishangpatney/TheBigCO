@@ -4,6 +4,8 @@ import wave
 import struct
 import math
 
+from numpy.lib.function_base import append
+
 class Morse:
     """
         Capital letters are converted to lowercase
@@ -71,12 +73,15 @@ class Morse:
     # setter method to update morse
     def setText(self,text):
         self.unencoded = text
-
+        return text
     # encode array into morse code as text
-    def encode_text(self):
+    def encode_text(self, txt=""):
         print("Generating Morse...")
         morseArr=  []
         
+        if (txt):
+            self.setText(txt)
+
         for char in self.unencoded:
             
             #filter out non alpha chars
@@ -91,7 +96,7 @@ class Morse:
 
     # decode morse code text
     def decode_text(self, morse):
-        print("Decoding Morse")
+        print("...end=")
         morse = morse.split(Morse.encKey[' '])
         for word in range(len(morse)):
             
@@ -108,6 +113,9 @@ class Morse:
 
     def generate_audio(self, filename="morse"):
         print("Creating Audio File...")
+
+        if filename == "":
+            filename = "morse"
         
         # specify morse code time dutations        
         DOT = int((Morse.sample*0.5)/Morse.samples_in_T)
@@ -169,19 +177,50 @@ class Morse:
         fout.close()
         print("Saved: "+filename+".wav")
 
-# demo example
-txt = str(input("Enter a message to be converted:(enter key to submit)\n"))
-runner = Morse(txt)
 
-# returns morse code
-# file called morse.txt has also
-# been created
-morse_txt = runner.encode_text()
 
-#generate audio file
-runner.generate_audio()
+def show_commands():
+    print(
+        """
+        help - displays this message
+        morse <text to be converted to morse>
+            e.g> morse hello world
+        fromFile retrieve, decode and display more code from txt file
+            e.g> fromFile morse.txt
+        makeAudio [optional <filename (default=morse )>]
+            generate morse morse code as wav audio file
 
-# Output text is the same as the input text
-# these methods could be adapted to read in
-# other morse code files
-print("Decoded Text:",runner.fromFile())
+            e.g> makeAudio morse
+            e.g> makeAudio
+
+
+        """
+    )
+
+runner = Morse()
+commands = {
+    "help":lambda x:show_commands(),
+    "morse":lambda x:runner.encode_text(x),
+    "fromFile":lambda f:print(runner.fromFile(f)),
+    "makeAudio":lambda x:runner.generate_audio(x)
+}
+
+while(True):
+    usrInput = input("\nEnter Command (help for info, q to quit):")
+    if usrInput == "q":
+        break
+    try:
+        inputs = usrInput.split(" ")
+        if(len(inputs) == 1):
+            inputs.append("")
+        commands.get(inputs[0])(" ".join(inputs[1:]))
+    except Exception as e:
+        #print(e)
+        show_commands()
+
+print("Program Exited")
+# # demo example
+# morse hello world
+# fromFile morse.txt
+# makeAudio sound1
+# makeAudio

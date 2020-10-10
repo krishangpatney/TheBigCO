@@ -11,11 +11,7 @@ def validator(grid):
     for i in range(9):
         j, k = (i // 3) * 3, (i % 3) * 3
         # checks each row and col, and 3x3 grids 
-        if sorted(grid[i,:]) == list(range(1, 9)):
-            return False
-        elif sorted(grid[:,i]) == list(range(1, 9)):
-            return False
-        elif sorted(grid[j:j+3, k:k+3].ravel()) == list(range(1, 9)):
+        if sorted(grid[i,:]) == list(range(1, 9)) or sorted(grid[:,i]) == list(range(1, 9)) or sorted(grid[j:j+3, k:k+3].ravel()) == list(range(1, 9)):
             return False
     return True
 

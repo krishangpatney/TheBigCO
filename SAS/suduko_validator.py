@@ -2,7 +2,7 @@ import numpy as np
 
 # convert string to grid
 def validator(string):
-    if len(a) != (9*9) and all(i.isdigit() for i in a) != True:
+    if len(string) != (9*9) and all(i.isdigit() for i in string) != True:
         return False
     grid = '\n'.join([string[i:i+9] for i in range(0, len(string), 9)])
     grid = np.array([[int(i) for i in line] for line in grid.split()])
@@ -18,6 +18,6 @@ if __name__ == "__main__":
     # get input 
     # Test String
     print("Test String : 859612437723854169164379528986147352375268914241593786432981675617425893598736241")
-    print(validator(create_grid('859612437723854169164379528986147352375268914241593786432981675617425893598736241')))
+    print(validator('859612437723854169164379528986147352375268914241593786432981675617425893598736241'))
     string = input('enter string input : ')
-    print(validator(create_grid(string)))
+    print(validator(string))

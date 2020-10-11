@@ -3,26 +3,30 @@ import matplotlib.pyplot as plt
 import wave
 import struct
 import math
-
+from scipy.io import wavfile
 from numpy.lib.function_base import append
 
 class Morse:
     """
-        Capital letters are converted to lowercase
-        Takes input and generates 
-            morse.txt file
-            morse.wav file
+    Takes text inut from CLI or file and encodes into morse
+    text or wav file.
 
-            Turns encoded morse into text
-            Not implemented- audio to text
-
-
+    Takes encoded morse from file or wav file and decodes into
+    text
     """
 
     freq = 480 #C4 middle C
     T = 1/freq
     sample = 44100
     samples_in_T = int(sample*T)
+
+    # specify morse code time dutations        
+    DOT = int((sample*0.1)/samples_in_T)
+    DASH = int((sample*0.3)/samples_in_T)
+
+    # 3 space characters in a row
+    LETTER_SPACE = int(DOT * samples_in_T)
+    WORD_SPACE =  LETTER_SPACE*3
 
     # disgusting i know
     # its just a char map of askii to morse
@@ -111,21 +115,8 @@ class Morse:
         #remove trailing space
         return morse[:-1]
 
-    def generate_audio(self, filename="morse"):
-        print("Creating Audio File...")
-
-        if filename == "":
-            filename = "morse"
-        
-        # specify morse code time dutations        
-        DOT = int((Morse.sample*0.5)/Morse.samples_in_T)
-        DASH = int((Morse.sample*1)/Morse.samples_in_T)
-
-        # 3 space characters in a row
-        LETTER_SPACE = int(DOT * Morse.samples_in_T)
-        WORD_SPACE =  LETTER_SPACE*3
+    def build_wave(self):
         # build a fourier series to sample wave
-        x = np.arange(DOT*Morse.samples_in_T)
         y = np.empty(Morse.samples_in_T)
         for i in range(Morse.samples_in_T):
             y1 = 0
@@ -134,12 +125,21 @@ class Morse:
             for j in range(0,20,4):
                 y1+=4/(math.pi*((2+j)/2))*math.sin((2+j)*math.pi*i/Morse.samples_in_T)
             y[i]=y1
+        return y
+        
+
+    def generate_audio(self, filename="morse"):
+        print("Creating Audio File...")
+
+        if filename == "":
+            filename = "morse"
+        y = self.build_wave()
 
         # create arrays that represent each sound type
-        dot    = np.tile(y,DOT)
-        dash   = np.tile(y,DASH)
-        word_space  = np.zeros(WORD_SPACE) 
-        letter_space  = np.zeros(LETTER_SPACE) 
+        dot    = np.tile(y,Morse.DOT)
+        dash   = np.tile(y,Morse.DASH)
+        word_space  = np.zeros(Morse.WORD_SPACE) 
+        letter_space  = np.zeros(Morse.LETTER_SPACE) 
         
         #init sound array
         sound_arr = np.empty((1))
@@ -154,7 +154,9 @@ class Morse:
                 sound_arr = np.hstack((sound_arr,letter_space))
             elif(char == ' '):
                 sound_arr = np.hstack((sound_arr,word_space))
-
+        
+        plt.plot(sound_arr)
+        plt.show()
         self.save_audio(sound_arr, filename)
 
     def save_audio(self,track, filename="morse"):
@@ -172,11 +174,31 @@ class Morse:
         #encode data into raw bytes
         BinStr = bytearray()
         for i in range(track.size):
-            BinStr.extend(struct.pack('h', int(round(track[i]*10000))))
+            BinStr.extend(struct.pack('l', int(round(track[i]*10000))))
         fout.writeframesraw(BinStr)
         fout.close()
         print("Saved: "+filename+".wav")
 
+    def get_audio(self,filename="morse"):
+        #under dev
+        if(filename==""):
+            filename="morse"
+        
+        #another import but scipy makes it super easy to inport data
+        samplerate, data = wavfile.read(filename+".wav")
+        #data = data[:data.shape[0]]
+        # create arrays that represent each sound type
+        y = self.build_wave()
+        dot    = np.repeat(np.tile(y,Morse.DOT),2)
+        dash   = np.repeat(np.tile(y,Morse.DASH),2)
+        word_space  = np.repeat(np.zeros(Morse.WORD_SPACE),2) 
+        letter_space  = np.repeat(np.zeros(Morse.LETTER_SPACE),2) 
+
+        m = data/10000
+        n= np.repeat(dot,2)
+        plt.plot(m[:n.size])
+        plt.plot(n)
+        plt.show()
 
 
 def show_commands():
@@ -193,6 +215,14 @@ def show_commands():
             e.g> makeAudio morse
             e.g> makeAudio
 
+        fromAudio [optional <filename (default=morse )>]
+            retrieve morse code from audio
+            displays the audio input as both encoded morse
+            and decoded text.
+
+            e.g>getAudio
+            e.g>getAudio secretMorse
+            
 
         """
     )
@@ -202,7 +232,8 @@ commands = {
     "help":lambda x:show_commands(),
     "morse":lambda x:runner.encode_text(x),
     "fromFile":lambda f:print(runner.fromFile(f)),
-    "makeAudio":lambda x:runner.generate_audio(x)
+    "makeAudio":lambda x:runner.generate_audio(x),
+    "fromAudio":lambda x:runner.get_audio(x)
 }
 
 while(True):
@@ -215,12 +246,12 @@ while(True):
             inputs.append("")
         commands.get(inputs[0])(" ".join(inputs[1:]))
     except Exception as e:
-        #print(e)
-        show_commands()
+        print(e)
+        #show_commands()
 
 print("Program Exited")
 # # demo example
-# morse hello world
-# fromFile morse.txt
-# makeAudio sound1
-# makeAudio
+# >morse hello world
+# >fromFile morse.txt
+# >makeAudio sound1
+# >makeAudio
